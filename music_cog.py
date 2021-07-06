@@ -36,11 +36,11 @@ ytdl = YoutubeDL(ytdlopts)
 
 
 class VoiceConnectionError(commands.CommandError):
-    """Custom Exception class for connection errors."""
+    
 
 
 class InvalidVoiceChannel(VoiceConnectionError):
-    """Exception for cases of invalid Voice Channels."""
+   
 
 
 class YTDLSource(discord.PCMVolumeTransformer):
@@ -57,9 +57,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         # https://github.com/rg3/youtube-dl/blob/master/README.md
 
     def __getitem__(self, item: str):
-        """Allows us to access attributes similar to a dict.
-        This is only useful when you are NOT downloading.
-        """
+        
         return self.__getattribute__(item)
 
     @classmethod
@@ -85,8 +83,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
     @classmethod
     async def regather_stream(cls, data, *, loop):
-        """Used for preparing a stream, instead of downloading.
-        Since Youtube Streaming links expire."""
+        
         loop = loop or asyncio.get_event_loop()
         requester = data['requester']
 
@@ -97,11 +94,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
 
 class MusicPlayer:
-    """A class which is assigned to each guild using the bot for Music.
-    This class implements a queue and loop, which allows for different guilds to listen to different playlists
-    simultaneously.
-    When the bot disconnects from the Voice it's instance will be destroyed.
-    """
+    
 
     __slots__ = ('bot', '_guild', '_channel', '_cog', 'queue', 'next', 'current', 'np', 'volume')
 
@@ -121,7 +114,7 @@ class MusicPlayer:
         ctx.bot.loop.create_task(self.player_loop())
 
     async def player_loop(self):
-        """Our main player loop."""
+        
         await self.bot.wait_until_ready()
 
         while not self.bot.is_closed():
@@ -148,7 +141,7 @@ class MusicPlayer:
             self.current = source
 
             self._guild.voice_client.play(source, after=lambda _: self.bot.loop.call_soon_threadsafe(self.next.set))
-            embed = discord.Embed(title="Now playing", description=f"[{source.title}]({source.web_url}) [{source.requester.mention}]", color=discord.Color.green())
+            embed = discord.Embed(title="Memutar", description=f"[{source.title}]({source.web_url}) [{source.requester.mention}]", color=discord.Color.green())
             self.np = await self._channel.send(embed=embed)
             await self.next.wait()
 
@@ -157,12 +150,12 @@ class MusicPlayer:
             self.current = None
 
     def destroy(self, guild):
-        """Disconnect and cleanup the player."""
+        
         return self.bot.loop.create_task(self._cog.cleanup(guild))
 
 
 class Music(commands.Cog):
-    """Music related commands."""
+    
 
     __slots__ = ('bot', 'players')
 
@@ -182,13 +175,13 @@ class Music(commands.Cog):
             pass
 
     async def __local_check(self, ctx):
-        """A local check which applies to all commands in this cog."""
+        
         if not ctx.guild:
             raise commands.NoPrivateMessage
         return True
 
     async def __error(self, ctx, error):
-        """A local error handler for all errors arising from commands in this cog."""
+        
         if isinstance(error, commands.NoPrivateMessage):
             try:
                 return await ctx.send('This command can not be used in Private Messages.')
@@ -202,7 +195,7 @@ class Music(commands.Cog):
         traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)
 
     def get_player(self, ctx):
-        """Retrieve the guild player, or generate one."""
+        
         try:
             player = self.players[ctx.guild.id]
         except KeyError:
@@ -214,14 +207,7 @@ class Music(commands.Cog):
     @commands.command(name='join', aliases=['connect', 'j'], description="Menghubungkan ke voice channel")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def connect_(self, ctx, *, channel: discord.VoiceChannel=None):
-        """Connect to voice.
-        Parameters
-        ------------
-        channel: discord.VoiceChannel [Optional]
-            The channel to connect to. If a channel is not specified, an attempt to join the voice channel you are in
-            will be made.
-        This command also handles moving the bot to different channels.
-        """
+       
         if not channel:
             try:
                 channel = ctx.author.voice.channel
@@ -251,14 +237,7 @@ class Music(commands.Cog):
     @commands.command(name='play', aliases=['sing','p'], description="Menyetel lagu")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def play_(self, ctx, *, search: str):
-        """Request a song and add it to the queue.
-        This command attempts to join a valid voice channel if the bot is not already in one.
-        Uses YTDL to automatically search and retrieve a song.
-        Parameters
-        ------------
-        search: str [Required]
-            The song to search and retrieve using YTDL. This could be a simple search, an ID or URL.
-        """
+        
         await ctx.trigger_typing()
 
         vc = ctx.voice_client
@@ -277,7 +256,7 @@ class Music(commands.Cog):
     @commands.command(name='pause', description="pause")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def pause_(self, ctx):
-        """Pause the currently playing song."""
+       
         vc = ctx.voice_client
 
         if not vc or not vc.is_playing():
@@ -307,7 +286,7 @@ class Music(commands.Cog):
     @commands.command(name='skip', description="skip ke lagu salnjutnya di antrian")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def skip_(self, ctx):
-        """Skip the song."""
+       
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
@@ -324,7 +303,7 @@ class Music(commands.Cog):
     @commands.command(name='remove', aliases=['rm', 'rem'], description="Menghapus suatu antrian")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def remove_(self, ctx, pos : int=None):
-        """Removes specified song from queue"""
+       
 
         vc = ctx.voice_client
 
@@ -348,7 +327,7 @@ class Music(commands.Cog):
     @commands.command(name='clear', aliases=['clr', 'cl', 'cr'], description="clears entire queue")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def clear_(self, ctx):
-        """Deletes entire queue of upcoming songs."""
+        
 
         vc = ctx.voice_client
 
@@ -363,7 +342,7 @@ class Music(commands.Cog):
     @commands.command(name='queue', aliases=['q', 'playlist', 'que'], description="Menunjukkan antrian")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def queue_info(self, ctx):
-        """Retrieve a basic queue of upcoming songs."""
+        
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
@@ -397,7 +376,7 @@ class Music(commands.Cog):
     @commands.command(name='np', aliases=['song', 'current', 'currentsong', 'playing'], description="Menunjukkan yg sedang di mainkan")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def now_playing_(self, ctx):
-        """Display information about the currently playing song."""
+        
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
@@ -426,12 +405,7 @@ class Music(commands.Cog):
     @commands.command(name='volume', aliases=['vol', 'v'], description="Mengubah volume")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def change_volume(self, ctx, *, vol: float=None):
-        """Change the player volume.
-        Parameters
-        ------------
-        volume: float or int [Required]
-            The volume to set the player to in percentage. This must be between 1 and 100.
-        """
+        
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
@@ -458,10 +432,7 @@ class Music(commands.Cog):
     @commands.command(name='leave', aliases=["stop", "dc", "disconnect", "bye"], description="Menghentikan dan Memutus Bot")
     @commands.cooldown(5,10,commands.BucketType.user)
     async def leave_(self, ctx):
-        """Stop the currently playing song and destroy the player.
-        !Warning!
-            This will destroy the player assigned to your guild, also deleting any queued songs and settings.
-        """
+        
         vc = ctx.voice_client
 
         if not vc or not vc.is_connected():
