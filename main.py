@@ -1,7 +1,6 @@
 import discord
 import os
 from discord.ext import commands
-import pickle
 import random
 
 from music_cog import Music
@@ -282,8 +281,6 @@ async def alias(ctx):
                      
 
 Bot.add_cog(Music(Bot))
-
-keep_alive.keep_alive()
 
 my_secret = os.environ['token']
 Bot.run(my_secret)
