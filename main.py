@@ -5,7 +5,6 @@ import random
 
 from music_cog import Music
 
-import keep_alive
 
 Bot = commands.Bot(command_prefix='+')
 Bot.remove_command("help")
